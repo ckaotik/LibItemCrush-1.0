@@ -11,7 +11,7 @@
 -- GLOBALS: GetItemInfo, GetProfessions, GetProfessionInfo
 -- GLOBALS: select, unpack, math, tonumber, wipe, pairs
 
-local MAJOR, MINOR = "LibItemCrush-1.0", 1
+local MAJOR, MINOR = "LibItemCrush-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
@@ -298,7 +298,7 @@ do
 	local LNETHER, GNETHER, LETERNAL, GETERNAL, LPLANAR, GPLANAR, LCOSMIC, GCOSMIC = 11174, 11175, 16202, 16203, 22447, 22446, 34056, 34055
 	local LMAGIC, GMAGIC, LASTRAL, GASTRAL, LMYSTIC, GMYSTIC = 10938, 10939, 10998, 11082, 11134, 11135
 	local STRANGE, SOUL, VISION, DREAM, ILLUSION, ARCANE, INFINITE, HYPNOTIC = 10940, 11083, 11137, 11176, 16204, 22445, 34054, 52555
-	local SHA, ETHERAL, SETHERAL, SPIRIT, MYST = 74248, 74247, 74252, 74249, 74250
+	local SHA, ETHERAL, SETHERAL, SPIRIT, MYST, SHAFRAGMENT = 74248, 74247, 74252, 74249, 74250, 105718
 
 	-- shared between weapons and armor
 	local function GetUncommonVals(ilvl)
@@ -358,6 +358,8 @@ do
 			elseif ilvl <= 359 then return  MAELSTROM,   "1x",    "100%", 1.0, 1
 			elseif ilvl <= 359 then return  MAELSTROM, "1-2x",    "100%", 1.5, 1
 			elseif ilvl <= 416 then return  MAELSTROM, "1-2x",    "100%", 1.5, 1
+			elseif ilvl <  486 then return        SHA, "1-2x",    "100%", 1.13, 1
+			elseif ilvl <= 496 then return SHAFRAGMENT, "1-2x",    "100%", 1.13, 1
 			else return                           SHA,   "1x",    "100%", 1.0, 1 end
 
 		elseif qual == 3 then -- Rare
@@ -429,7 +431,7 @@ do
 			if ilvl <= 151 then return myskill >= 300 end
 			if ilvl <= 277 then return myskill >= 375 end
 			if ilvl <= 416 then return myskill >= 475 end
-			if ilvl <= 516 then return myskill >= 575 end
+			if ilvl <= 575 then return myskill >= 575 end
 		end
 
 		-- We must have new ilvls not defined here; might as well assume the player can DE
