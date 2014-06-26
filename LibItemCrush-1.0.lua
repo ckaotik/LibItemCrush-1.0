@@ -407,8 +407,9 @@ do
 	-- Tells us if we can DE a give item based on ilvl and quality
 	function lib:CanDisenchant(ilvl, quality)
 		local prof1, prof2 = GetProfessions()
-		local name, _, myskill = GetProfessionInfo(prof1)
-		if name ~= ENCHANTING then name, _, myskill = GetProfessionInfo(prof2) end
+		local name, myskill
+		if prof1 then name, _, myskill = GetProfessionInfo(prof1) end
+		if prof2 and name ~= ENCHANTING then name, _, myskill = GetProfessionInfo(prof2) end
 		if name ~= ENCHANTING then return false end
 
 		if ilvl <= 20 then return true end
