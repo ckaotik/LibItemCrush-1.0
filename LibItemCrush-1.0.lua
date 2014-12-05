@@ -15,15 +15,14 @@ local MAJOR, MINOR = "LibItemCrush-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end
 
-function lib:IsCrushable(item)
-	return lib:IsDisenchantable(item) or lib:IsMillable(item) or lib:IsProspectable(item)
-end
-
 local DISENCHANT = GetSpellInfo(13262)
 local MILLING = GetSpellInfo(51005)
 local PROSPECTING = GetSpellInfo(31252)
 function lib:GetCrushType(item)
-	return (lib:IsDisenchantable(item) and DISENCHANT) or (lib:IsMillable(item) and MILLING) or (lib:IsProspectable(item) and PROSPECTING)
+	return (lib:IsDisenchantable(item) and DISENCHANT)
+		or (lib:IsMillable(item) and MILLING)
+		or (lib:IsProspectable(item) and PROSPECTING)
+		or nil
 end
 
 function lib:GetPossibleCrushs(item)
@@ -35,7 +34,6 @@ function lib:GetPossibleCrushs(item)
 		return lib:GetPossibleProspects(item)
 	end
 end
-
 
 local CRAFTING = select(6, GetAuctionItemClasses())
 local ORES, _, HERBS = select(4, GetAuctionItemSubClasses(6))
@@ -51,7 +49,7 @@ function lib:GetCrushSources(item)
 	elseif itemType == CRAFTING and itemSubType == ORES then
 		data = lib.prospectData
 	else
-		-- [TODO] disenchanting
+		-- TODO: disenchanting, something like 'Rare Weapons, level 30-55'
 	end
 	if not data then return end
 
@@ -73,8 +71,9 @@ do
 	local GOLDCLOVER, TIGERLILY, TALANDRASROSE, DEADNETTLE, FIRELEAF, ADDERSTONGUE, LICHBLOOM, ICETHORN = 36901, 36904, 36907, 37921, 39970, 36903, 36905, 36906
 	local CINDERBLOOM, STORMVINE, AZSHARASVEIL, HEARTBLOSSOM, WHIPTAIL, TWLGHTJASMINE = 52983, 52984, 52985, 52986, 52988, 52987
 	local GREENTEA, RAINPOPPY, SILKWEED, SNOWLILY, FOOLSCAP = 72234, 72237, 72235, 79010, 79011
+	local FIREWEED, FROSTWEED, GFLYTRAP, NARROWBLOOM, STARFLOWER, TORCHID = 109126, 109124, 109126, 109128, 109127, 109129
 
-	local ALABASTER, VERDANT, DUSKY, GOLDEN, BURNT, EMERALD, VIOLET, SILVERY, NETHER, AZURE, ASHEN, SHADOW, INDIGO, RUBY, SAPPHIRE, EBON, ICY, BURNING, MISTY = 39151, 43103, 39334, 39338, 43104, 39339, 39340, 39341, 39342, 39343, 61979, 79251, 43105, 43106, 43107, 43108, 43109, 61980, 79253
+	local ALABASTER, VERDANT, DUSKY, GOLDEN, BURNT, EMERALD, VIOLET, SILVERY, NETHER, AZURE, ASHEN, SHADOW, INDIGO, RUBY, SAPPHIRE, EBON, ICY, BURNING, MISTY, CERULEAN = 39151, 43103, 39334, 39338, 43104, 39339, 39340, 39341, 39342, 39343, 61979, 79251, 43105, 43106, 43107, 43108, 43109, 61980, 79253, 114931
 
 	local millingData = {
 		[PEACEBLOOM] 	= { ALABASTER, 	"2-3x", "100%", 2.5, 1, },
@@ -132,6 +131,12 @@ do
 		[SILKWEED] 		= { SHADOW, 	"2-3x", "100%", 2.5, 1, 	MISTY,		"1-3x", "25%", 2, .25 },
 		[SNOWLILY] 		= { SHADOW, 	"2-3x", "100%", 2.5, 1, 	MISTY,		"1-3x", "25%", 2, .25 },
 		[FOOLSCAP] 		= { SHADOW, 	"2-4x", "100%", 3, 1,	 	MISTY,		"1-3x", "50%", 2, .5 },
+		[FIREWEED] 		= { CERULEAN, 	"2-4x", "100%", 3, 1 }, -- TODO: verify!
+		[FROSTWEED] 	= { CERULEAN, 	"2-4x", "100%", 3, 1 },
+		[GFLYTRAP] 		= { CERULEAN, 	"2-4x", "100%", 3, 1 },
+		[NARROWBLOOM] 	= { CERULEAN, 	"2-4x", "100%", 3, 1 },
+		[STARFLOWER] 	= { CERULEAN, 	"2-4x", "100%", 3, 1 },
+		[TORCHID] 		= { CERULEAN, 	"2-4x", "100%", 3, 1 },
 	}
 	lib.millingData = millingData
 
@@ -153,30 +158,6 @@ do
 
 		if millingData[itemID] then return true end
 	end
-
-	--[[ local MillingSkillRequired = {
-		[ALABASTER] = 1,
-		[DUSKY] =  25,
-		[GOLDEN] = 75,
-		[EMERALD] = 125,
-		[VIOLET] = 175,
-		[SILVERY] = 225,
-		[NETHER] = 275,
-		[AZURE] = 325,
-		[ASHEN] = 425, -- [ASHEN_PIGMENT_MID] = 450,
-		[SHADOW] = 500,
-
-		[VERDANT] = 1,
-		[DUSKY_PIGMENT_HIGH] =  25,
-		[GOLDEN_PIGMENT_HIGH] = 75,
-		[EMERALD_PIGMENT_HIGH] = 125,
-		[VIOLET_PIGMENT_HIGH] = 175,
-		[SILVERY_PIGMENT_HIGH] = 225,
-		[NETHER_PIGMENT_HIGH] = 275,
-		[ICY] = 325,
-		[BURNING] = 475,
-		[MISTY] = 500,
-	} --]]
 end
 
 --[[ 		PROSPECTING		 ]]--
@@ -289,7 +270,7 @@ end
 do
 	local WEAPON, ARMOR = GetAuctionItemClasses() -- returns localized strings
 
-	-- constants taken by tekkub taken by Enchantrix :P
+	-- constants taken from tekkub taken from Enchantrix
 	local VOID, NEXUS, ABYSS, MAELSTROM = 22450, 20725, 34057, 52722
 	local SHEAVENLY, LHEAVENLY = 52720, 52721
 	local LRADIANT, SBRILLIANT, LBRILLIANT, SPRISMATIC, LPRISMATIC, LDREAM = 11178, 14343, 14344, 22448, 22449, 34052
@@ -299,6 +280,7 @@ do
 	local LMAGIC, GMAGIC, LASTRAL, GASTRAL, LMYSTIC, GMYSTIC = 10938, 10939, 10998, 11082, 11134, 11135
 	local STRANGE, SOUL, VISION, DREAM, ILLUSION, ARCANE, INFINITE, HYPNOTIC = 10940, 11083, 11137, 11176, 16204, 22445, 34054, 52555
 	local SHA, ETHERAL, SETHERAL, SPIRIT, MYST, SHAFRAGMENT = 74248, 74247, 74252, 74249, 74250, 105718
+	local DRAENIC, LUMINOUS, SLUMINOUS, TEMPORAL, TEMPORALFRAGMENT = 109693, 111245, 115502, 113588, 115504
 
 	-- shared between weapons and armor
 	local function GetUncommonVals(ilvl)
@@ -327,7 +309,13 @@ do
 		elseif ilvl <= 380 then return   SPIRIT,  "1-3x", "85%", 2.0, .85,     MYST,   "1x", "15%", 1.0, .15
 		elseif ilvl <= 390 then return   SPIRIT,  "1-4x", "85%", 2.5, .85,     MYST,   "1x", "15%", 1.0, .15
 		elseif ilvl <= 410 then return   SPIRIT,  "1-5x", "85%", 3.0, .85,     MYST, "1-2x", "15%", 1.5, .15
-		else return                      SPIRIT,  "1-6x", "85%", 3.5, .85,     MYST, "1-3x", "15%", 2.0, .15 end
+		elseif ilvl <= 490 then return   SPIRIT,  "1-6x", "85%", 3.5, .85,     MYST, "1-3x", "15%", 2.0, .15
+		elseif ilvl <= 509 then return   DRAENIC,  "1-4x", "100%", 2.5, 1.0
+		else return
+			DRAENIC,   "1-4x", "95%", 6.0, .95,
+			LUMINOUS,    "1x",  "3%", 1.0, .03,
+			SLUMINOUS, "1-6x",  "2%", 3.5, .02
+		end
 	end
 
 	-- Find all the possible DE results for a given item
@@ -341,11 +329,11 @@ do
 	--   num_qty  - A number representing the average qty received
 	--   num_perc - A number representing the probability
 	function lib:GetPossibleDisenchants(item)
-		local _, link, qual, ilvl, _, itemtype = GetItemInfo(item)
-		if not link or not lib:IsDisenchantable(link) then return end
+		local _, link, qual, ilvl, _, itemType = GetItemInfo(item)
+		if not link or not lib:IsDisenchantable(link) or (itemType ~= ARMOR and itemType ~= WEAPON) then return end
 
 		if qual == 4 then -- Epic
-			if ilvl > 75 and ilvl <= 80 and itemtype == WEAPON then return NEXUS, "1-2x", "33%/66%", 5/3
+			if ilvl > 75 and ilvl <= 80 and itemType == WEAPON then return NEXUS, "1-2x", "33%/66%", 5/3
 			elseif ilvl <= 45  then return   SRADIANT, "2-4x",    "100%", 3.0, 1
 			elseif ilvl <= 50  then return   LRADIANT, "2-4x",    "100%", 3.0, 1
 			elseif ilvl <= 55  then return SBRILLIANT, "2-4x",    "100%", 3.0, 1
@@ -360,7 +348,10 @@ do
 			elseif ilvl <= 416 then return  MAELSTROM, "1-2x",    "100%", 1.5, 1
 			elseif ilvl <  486 then return        SHA, "1-2x",    "100%", 1.13, 1
 			elseif ilvl <= 496 then return SHAFRAGMENT, "1-2x",    "100%", 1.13, 1
-			else return                           SHA,   "1x",    "100%", 1.0, 1 end
+			elseif ilvl <= 600 then return         SHA,   "1x",    "100%", 1.0, 1
+			else return
+				TEMPORAL, "1x", "100%", 1.0, 1
+			end
 
 		elseif qual == 3 then -- Rare
 			if     ilvl <=  25 then return SGLIMMERING, "1x",  "100%", 1, 1
@@ -378,101 +369,39 @@ do
 			elseif ilvl <= 316 then return   SHEAVENLY, "1x",  "100%", 1, 1
 			elseif ilvl <= 380 then return   LHEAVENLY, "1x",  "100%", 1, 1
 			elseif ilvl <= 424 then return    SETHERAL, "1x",  "100%", 1, 1
-			else return                        ETHERAL, "1x",  "100%", 1, 1 end
+			elseif ilvl <= 529 then return     ETHERAL, "1x",  "100%", 1, 1
+			elseif ilvl <= 590 then return
+				DRAENIC,  "5-12x", "45%", 8.5, .45,
+				LUMINOUS,    "1x", "35%", 1.0, .35,
+				SLUMINOUS, "1-6x", "20%", 3.5, .20
+			else return
+				LUMINOUS,    "1x", "55%", 1.0, .55,
+				DRAENIC,  "5-12x", "35%", 8.5, .35,
+				SLUMINOUS, "3-6x", "10%", 4.5, .10
+			end
 
 		elseif qual == 2 then -- Uncommon
-			if itemtype == ARMOR then
-				return GetUncommonVals(ilvl)
+			if itemType == ARMOR then return GetUncommonVals(ilvl)
 
-			elseif itemtype == WEAPON and ilvl < 380 then
+			-- weapons
+			elseif ilvl < 380 then
 				local r1i, r1ta, r1tp, r1a, r1p, r2i, r2ta, r2tp, r2a, r2p, r3i, r3ta, r3tp, r3a, r3p = GetUncommonVals(ilvl)
 				return r1i, r1ta, r2tp, r1a, r2p, r2i, r2ta, r1tp, r2a, r1p, r3i, r3ta, r3tp, r3a, r3p
-
-			elseif itemtype == WEAPON then
+			elseif ilvl <= 480 then
 				-- Panda green weapons follow different rules form the old pattern
 				if     ilvl <= 380 then return SPIRIT, "1-4x", "85%", 2.5, .85, MYST,   "1x", "15%", 1.0, .15
 				elseif ilvl <= 390 then return SPIRIT, "1-5x", "85%", 3.0, .85, MYST,   "1x", "15%", 1.0, .15
 				elseif ilvl <= 410 then return SPIRIT, "1-6x", "85%", 3.5, .85, MYST, "1-2x", "15%", 1.5, .15
 				else return                    SPIRIT, "1-7x", "85%", 4.0, .85, MYST, "1-3x", "15%", 2.0, .15 end
+			else
+				-- WoD green weapons
+				return GetUncommonVals(ilvl)
 			end
 		end
 	end
 
-	function lib:CanDisenchantItem(item)
-		local _, link, quality, level, _, itemtype = GetItemInfo(item)
-		return lib:IsDisenchantable(item) and lib:CanDisenchant(level, quality)
-	end
-
-	local ENCHANTING = GetSpellInfo(7411)
-	-- Tells us if we can DE a give item based on ilvl and quality
-	function lib:CanDisenchant(ilvl, quality)
-		local prof1, prof2 = GetProfessions()
-		local name, myskill
-		if prof1 then name, _, myskill = GetProfessionInfo(prof1) end
-		if prof2 and name ~= ENCHANTING then name, _, myskill = GetProfessionInfo(prof2) end
-		if name ~= ENCHANTING then return false end
-
-		if ilvl <= 20 then return true end
-		if ilvl <= 60 then return myskill >= (math.floor(ilvl/5) - 3) * 25 end
-		if ilvl <= 89 or quality <= 3 and ilvl <= 99 then return myskill >= 225 end
-
-		if quality == 2 then -- uncommon
-			if ilvl <= 120 then return myskill >= 275 end
-			if ilvl <= 150 then return myskill >= 325 end
-			if ilvl <= 182 then return myskill >= 350 end
-			if ilvl <= 333 then return myskill >= 425 end
-			if ilvl <= 437 then return myskill >= 475 end
-		elseif quality == 3 then -- rare
-			if ilvl <= 120 then return myskill >= 275 end
-			if ilvl <= 200 then return myskill >= 325 end
-			if ilvl <= 377 then return myskill >= 450 end
-			if ilvl <= 424 then return myskill >= 525 end
-			if ilvl <= 463 then return myskill >= 550 end
-		elseif quality == 4 then -- epic
-			if ilvl <= 151 then return myskill >= 300 end
-			if ilvl <= 277 then return myskill >= 375 end
-			if ilvl <= 416 then return myskill >= 475 end
-			if ilvl <= 575 then return myskill >= 575 end
-		end
-
-		-- We must have new ilvls not defined here; might as well assume the player can DE
-		return true
-	end
-
 	function lib:IsDisenchantable(item)
 		local _, itemLink, _, _, _, itemType = GetItemInfo(item)
-		local itemID = itemLink and select(3, itemLink:find("item:(%d+):"))
-			  itemID = itemID and tonumber(itemID)
-		if not itemID then return end
-
-		if itemType ~= WEAPON and itemType ~= ARMOR then return end
-		return not lib.notDisenchantable[itemID]
+		return itemLink and (itemType == WEAPON or itemType == ARMOR)
 	end
-
-	lib.notDisenchantable = {
-		[32540] = true,
-		[32541] = true,
-		[18665] = true,
-		[21766] = true,
-		[5004]  = true,
-		[20408] = true,
-		[20406] = true,
-		[20407] = true,
-		[14812] = true,
-		[31336] = true,
-		[32660] = true,
-		[32662] = true,
-		[11288] = true,
-		[11290] = true,
-		[12772] = true,
-		[11287] = true,
-		[11289] = true,
-		[29378] = true,
-		[69210] = true, -- Renowned Guild Tabard, is DEable, but no one in their right mind would want to
-		[63352] = true, -- Shroud of Cooperation (A), as above
-		[63353] = true, -- Shroud of Cooperation (H)
-		[63206] = true, -- Wrap of Unity (A)
-		[63207] = true, -- Wrap of Unity (H)
-		[69209] = true, -- Illustrious Guild Tabard
-	}
 end
